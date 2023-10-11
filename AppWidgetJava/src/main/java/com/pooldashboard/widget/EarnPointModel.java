@@ -4,12 +4,12 @@ import android.graphics.drawable.Drawable;
 
 import java.io.Serializable;
 
-public class WidgetModel implements Serializable {
+public class EarnPointModel implements Serializable {
     private String nameApp ;
     private Integer point ;
     private Drawable image ;
 
-    public WidgetModel(String nameApp, Integer point, Drawable image) {
+    public EarnPointModel(String nameApp, Integer point, Drawable image) {
         this.nameApp = nameApp;
         this.point = point;
         this.image = image;
