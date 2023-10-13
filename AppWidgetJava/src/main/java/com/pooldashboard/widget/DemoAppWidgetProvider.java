@@ -1,5 +1,7 @@
 package com.pooldashboard.widget;
 
+import static com.pooldashboard.widget.Constant.EXTRA_PACKAGE_NAME;
+import static com.pooldashboard.widget.ListAppRemoteViewFactory.listApp;
 import static com.pooldashboard.widget.ListEarnPointRemoteViewFactory.dataList;
 
 import android.app.PendingIntent;
@@ -14,15 +16,18 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.JsonReader;
 import android.util.Log;
 import android.widget.RemoteViews;
-import android.widget.Toast;
+
+import androidx.annotation.RequiresApi;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.StringReader;
 import java.lang.reflect.Type;
-import java.util.List;
 
 
 public class DemoAppWidgetProvider extends AppWidgetProvider {
@@ -30,17 +35,34 @@ public class DemoAppWidgetProvider extends AppWidgetProvider {
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-        if(getDataLocal(context)!= null){
+        Log.d("HHH", "onUpdate");
+        if(getDataExample(context) != null){
             dataList.clear();
-            dataList.addAll(getDataLocal(context)) ;
+            listApp.clear();
+            dataList.addAll(getDataExample(context).listEarnPointToday);
+            listApp.addAll(getDataExample(context).listApp);
         }
         for (int appWidgetId : appWidgetIds) {
-            updateUIWidget(appWidgetId, context, appWidgetManager, new RemoteViews(context.getPackageName(), R.layout.example_widget_4_3));
+            updateUIWidget(appWidgetId, context, appWidgetManager);
         }
         super.onUpdate(context, appWidgetManager, appWidgetIds);
     }
 
-    private void updateUIWidget(Integer appWidgetId , Context context , AppWidgetManager appWidgetManager , RemoteViews remoteViews) {
+    private void updateUIWidget(Integer appWidgetId , Context context , AppWidgetManager appWidgetManager ) {
+        Bundle options = appWidgetManager.getAppWidgetOptions(appWidgetId);
+        // Get min width and height.
+        int minHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT);
+
+        RemoteViews remoteViews = null;
+
+
+        if(getCellsForSize(minHeight) == 2){
+            remoteViews=   new RemoteViews(context.getPackageName(), R.layout.example_app_widget_min_height);
+        }
+        else {
+            remoteViews=   new RemoteViews(context.getPackageName(), R.layout.example_widget_4_3);
+        }
+        Log.d("HHH", minHeight +"minHeight of updateUIWidget");
         // list earn point to day
         Intent intentListEarnPoint = new Intent(context , ListEarnPointWidgetService.class);
         intentListEarnPoint.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
@@ -53,8 +75,7 @@ public class DemoAppWidgetProvider extends AppWidgetProvider {
         Intent postIntent = new Intent(context, DemoAppWidgetProvider.class);
         postIntent.setAction(ACTION_POST);
         PendingIntent postPendingIntent = PendingIntent.getBroadcast(context,
-                0, postIntent, PendingIntent.FLAG_IMMUTABLE);
-
+                0, postIntent, PendingIntent.FLAG_UPDATE_CURRENT |PendingIntent.FLAG_MUTABLE);
 
         remoteViews.setPendingIntentTemplate(R.id.gVListApp, postPendingIntent);
 
@@ -64,11 +85,10 @@ public class DemoAppWidgetProvider extends AppWidgetProvider {
 
     private void setViewData(RemoteViews views, Context context) {
 
-        views.setTextViewText(R.id.tvEarnPointDay,"16000");
-        views.setTextViewText(R.id.tvTotalApp,"10");
-        views.setTextViewText(R.id.tvTotalPoint,"100000");
+        views.setTextViewText(R.id.tvEarnPointDay,getDataExample(context).getPointToDay().toString()+"");
+        views.setTextViewText(R.id.tvTotalApp,getDataExample(context).getTotalPools().toString()+"");
+        views.setTextViewText(R.id.tvTotalPoint,getDataExample(context).getTotalPoint().toString()+"");
         views.setOnClickPendingIntent(R.id.ivPoolDashBoard,createPendingIntentToOpenLink(context,"com.pooldashboard"));
-        views.setInt(R.id.rlEarnPoint,"setBackgroundResource",R.drawable.bg_ll_stroke_black_corner8);
     }
 
     @Override
@@ -77,47 +97,77 @@ public class DemoAppWidgetProvider extends AppWidgetProvider {
         if(intent != null){
             String action = intent.getAction();
             if(!TextUtils.isEmpty(action) && action.equals(AppWidgetManager.ACTION_APPWIDGET_UPDATE)){
-               if(getDataLocal(context) != null){
-                   dataList.clear();
-                   dataList.addAll(getDataLocal(context)) ;
-               }
+                if(getDataExample(context) != null){
+                    dataList.clear();
+                    listApp.clear();
+                    dataList.addAll(getDataExample(context).listEarnPointToday);
+                    listApp.addAll(getDataExample(context).listApp);
+                }
                 AppWidgetManager appWidgetManager  =AppWidgetManager.getInstance(context);
                 int[] appWidgetIds =  appWidgetManager.getAppWidgetIds(new ComponentName(context,DemoAppWidgetProvider.class));
                 for (int appWidgetId : appWidgetIds) {
-                    updateUIWidget(appWidgetId, context, appWidgetManager, new RemoteViews(context.getPackageName(), R.layout.example_widget_4_3));
+                    updateUIWidget(appWidgetId, context, appWidgetManager);
                     appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.lvInfoPoint);
                     appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.gVListApp);
                 }
             }
             if(ACTION_POST.equals(intent.getAction())){
                 String packageName= intent.getStringExtra(Constant.KEY_CLICK_LIST_APP_WIDGET);
-                Log.d("onReceive","clicked" + packageName.toString());
+                if(checkAppInstall(packageName,context)){
+                    Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageName);
+                    launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(launchIntent);
+                }else {
+                    Uri linkUri = Uri.parse("https://play.google.com/store/apps/details?id=" + packageName);
+                    Intent intentCHPlay = new Intent(Intent.ACTION_VIEW,linkUri);
+                    intentCHPlay.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(intentCHPlay);
+                }
             }
         }
     }
 
     @Override
     public void onAppWidgetOptionsChanged(Context context, AppWidgetManager appWidgetManager, int appWidgetId, Bundle newOptions) {
+        Bundle options = appWidgetManager.getAppWidgetOptions(appWidgetId);
+        // Get min width and height.
+        int minHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT);
+        int minWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH);
+
+        updateUIWidget(appWidgetId, context, appWidgetManager);
+        super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions);
     }
 
+    private static int getCellsForSize(int size) {
+        int n = 2;
+        while (70 * n - 30 < size) {
+            ++n;
+        }
+        return n - 1;
+    }
 
-    private List<EarnPointModel> getDataLocal(Context context){
+     ExampleModel getDataExample(Context context){
         Gson gson = new Gson() ;
-        SharedPreferences sharedPreferences = context.getSharedPreferences(Constant.NAME_DATA_LOCAL, Context.MODE_PRIVATE);
-        String json = sharedPreferences.getString(Constant.KEY_LIST_EARN_TODAY, "");
-        Type type = new TypeToken<List<EarnPointModel>>() {}.getType();
-        List<EarnPointModel> listEarnPoint = gson.fromJson(json, type);
-        return listEarnPoint ;
+        SharedPreferences sharedPreferences = context.getSharedPreferences(Constant.NAME_DATA_LOCAL2, Context.MODE_PRIVATE);
+        String json = sharedPreferences.getString(Constant.KEY_EXAMPLE_MODEL_WIDGET, "");
+        Type type = new TypeToken<ExampleModel>() {}.getType();
+
+        ExampleModel exampleModel = gson.fromJson(json, type);
+        return exampleModel ;
     }
     private PendingIntent createPendingIntentToOpenLink(Context context, String packageName) {
-        if(checkAppInstall(packageName,context)){
-            Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageName);
-            return PendingIntent.getActivity(context,0,launchIntent,PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
-        }else {
-            Uri linkUri = Uri.parse("https://play.google.com/store/apps/details?id=" + packageName);
-            Intent intent = new Intent(Intent.ACTION_VIEW,linkUri);
-            return PendingIntent.getActivity(context,0,intent,PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
-        }
+        Intent launchIntent= new Intent(context, ItemAppClickBroadcastReceiver.class);
+        launchIntent.putExtra(EXTRA_PACKAGE_NAME, packageName);
+        int uniqueRequestCode = (int) System.currentTimeMillis();
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                context,
+                uniqueRequestCode,
+                launchIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        return pendingIntent;
     }
 
     private boolean checkAppInstall(String uri, Context context) {

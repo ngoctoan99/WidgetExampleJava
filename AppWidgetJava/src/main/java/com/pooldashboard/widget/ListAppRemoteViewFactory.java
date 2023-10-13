@@ -71,11 +71,17 @@ public class ListAppRemoteViewFactory implements RemoteViewsService.RemoteViewsF
     @Override
     public RemoteViews getViewAt(int i) {
         RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.item_app_widget);
+//        displayImageApp(listApp.get(i).getNameApp(),remoteViews);
+        Intent fillIntent = new Intent();
+        fillIntent.putExtra(Constant.KEY_CLICK_LIST_APP_WIDGET, listApp.get(i).getPackageName());
+        remoteViews.setOnClickFillInIntent(R.id.ivApp, fillIntent);
         if(listApp.get(i).getImage() != null){
             try {
                 Bitmap bitmap = Glide.with(context)
                         .asBitmap()
                         .load(Uri.parse(listApp.get(i).getImage()))
+                        .error(R.drawable.baseline_widgets_24)
+                        .placeholder(R.drawable.baseline_widgets_24)
                         .submit()
                         .get();
                 remoteViews.setImageViewBitmap(R.id.ivApp, bitmap);
@@ -84,14 +90,31 @@ public class ListAppRemoteViewFactory implements RemoteViewsService.RemoteViewsF
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-
-            Intent fillIntent = new Intent();
-            fillIntent.putExtra(Constant.KEY_CLICK_LIST_APP_WIDGET, "SSS");
-            remoteViews.setOnClickFillInIntent(R.id.ivApp, fillIntent);
         }else {
             remoteViews.setImageViewResource(R.id.ivApp,R.drawable.baseline_widgets_24);
         }
         return remoteViews;
+    }
+
+    private void displayImageApp(String name , RemoteViews remoteViews) {
+        Log.d("displayImageApp:" , name);
+        switch (name){
+            case "app1":
+                remoteViews.setImageViewResource(R.id.ivApp,R.drawable.icon_app_1);
+                break;
+            case "app2":
+                remoteViews.setImageViewResource(R.id.ivApp,R.drawable.icon_app_2);
+                break;
+            case "app3":
+                remoteViews.setImageViewResource(R.id.ivApp,R.drawable.icon_app_3);
+                break;
+            case "app4":
+                remoteViews.setImageViewResource(R.id.ivApp,R.drawable.icon_app_4);
+                break;
+            default:
+                remoteViews.setImageViewResource(R.id.ivApp,R.drawable.baseline_widgets_24);
+                break;
+        }
     }
 
     @Override

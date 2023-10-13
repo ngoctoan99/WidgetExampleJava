@@ -6,7 +6,6 @@
     android:id="@+id/rlItemWidget"
     android:layout_height="wrap_content">
     <ImageView
-        android:background="@drawable/bg_ll_stroke_black_corner8"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:scaleType="centerCrop"

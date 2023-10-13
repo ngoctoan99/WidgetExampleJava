@@ -23,6 +23,7 @@ import com.pooldashboard.widget.AppModel;
 import com.pooldashboard.widget.Constant;
 import com.pooldashboard.widget.DemoAppWidgetProvider;
 import com.pooldashboard.widget.EarnPointModel;
+import com.pooldashboard.widget.ExampleModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,9 @@ public class MainActivity extends AppCompatActivity {
     private Button btnAddWidget ,btnAddToList;
     private EditText edtNameApp ;
     public static List<EarnPointModel> listEarnPoint = new ArrayList<>();
+    public static List<AppModel> listAppInput = new ArrayList<>();
+    ExampleModel exampleModel ;
+    String json ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,29 +42,66 @@ public class MainActivity extends AppCompatActivity {
         btnAddWidget = findViewById(R.id.btnAddWidget);
         btnAddToList = findViewById(R.id.btnAddToList);
         edtNameApp = findViewById(R.id.edtNameApp);
-        initViewListApp();
+
+         json ="{\n" +
+                 "  \"totalPools\": 1000,\n" +
+                 "  \"totalPoint\": 1000,\n" +
+                 "  \"pointToday\": 1000,\n" +
+                 "  \"listApp\": [\n" +
+                 "    {\n" +
+                 "      \"image\": \"https://media.threatpost.com/wp-content/uploads/sites/103/2019/09/26105755/fish-1.jpg\",\n" +
+                 "      \"nameApp\": \"app1\",\n" +
+                 "      \"packageName\": \"com.example.App\"\n" +
+                 "    },\n" +
+                 "    {\n" +
+                 "      \"image\": \"https://media.threatpost.com/wp-content/uploads/sites/103/2019/09/26105755/fish-1.jpg\",\n" +
+                 "      \"nameApp\": \"app2\",\n" +
+                 "      \"packageName\": \"com.example.App\"\n" +
+                 "    },\n" +
+                 "    {\n" +
+                 "      \"image\": \"https://media.threatpost.com/wp-content/uploads/sites/103/2019/09/26105755/fish-1.jpg\",\n" +
+                 "      \"nameApp\": \"app3\",\n" +
+                 "      \"packageName\": \"com.example.App\"\n" +
+                 "    },\n" +
+                 "    {\n" +
+                 "      \"image\": \"https://media.threatpost.com/wp-content/uploads/sites/103/2019/09/26105755/fish-1.jpg\",\n" +
+                 "      \"nameApp\": \"app4\",\n" +
+                 "      \"packageName\": \"com.example.App\"\n" +
+                 "    }\n" +
+                 "  ],\n" +
+                 "  \"listEarnPointToday\": [\n" +
+                 "    {\n" +
+                 "      \"nameApp\": \"App1\",\n" +
+                 "      \"point\": 1000\n" +
+                 "    },\n" +
+                 "    {\n" +
+                 "      \"nameApp\": \"App1\",\n" +
+                 "      \"point\": 1000\n" +
+                 "    },\n" +
+                 "    {\n" +
+                 "      \"nameApp\": \"App1\",\n" +
+                 "      \"point\": 1000\n" +
+                 "    }\n" +
+                 "  ]\n" +
+                 "}";
+
         int[] widgetIds = AppWidgetManager.getInstance(this).getAppWidgetIds(new ComponentName(this, DemoAppWidgetProvider.class));
         if (widgetIds.length > 0) {
 
         } else {
-           pinWidget();
+           pinWidget(json);
         }
+
         btnAddWidget.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                pinWidget();
+                pinWidget(json);
             }
         });
 
-        btnAddToList.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                addToList();
-            }
-        });
     }
 
-    public void pinWidget() {
+    public void pinWidget(String json) {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
             AppWidgetManager mAppWidgetManager = this.getSystemService(AppWidgetManager.class) ;
             ComponentName myProvider =  new ComponentName( this, DemoAppWidgetProvider.class) ;
@@ -68,38 +109,17 @@ public class MainActivity extends AppCompatActivity {
                 Intent pinnedWidgetCallbackIntent =  new Intent(this,DemoAppWidgetProvider.class) ;
                 PendingIntent successCallback = PendingIntent.getBroadcast(this , 0,pinnedWidgetCallbackIntent,PendingIntent.FLAG_IMMUTABLE);
                 mAppWidgetManager.requestPinAppWidget(myProvider,null,successCallback);
+                addDataWidget(json);
             }
         }
     }
 
+    public void addDataWidget(String json) {
+        SharedPreferences sharedPreferences = getSharedPreferences(Constant.NAME_DATA_LOCAL2, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(Constant.KEY_EXAMPLE_MODEL_WIDGET,json);
+        editor.apply();
 
-
-    public void addToList(){
-        if(edtNameApp.getText().length() >= 0) {
-            EarnPointModel element = new EarnPointModel(edtNameApp.getText().toString(), 1000, null);
-            listEarnPoint.add(element);
-            Gson gson = new Gson();
-            String jsonListEarnToDay = gson.toJson(listEarnPoint);
-
-            SharedPreferences sharedPreferences = getSharedPreferences(Constant.NAME_DATA_LOCAL, Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString(Constant.KEY_LIST_EARN_TODAY, jsonListEarnToDay);
-            editor.apply();
-
-            Intent intent = new Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-            intent.setComponent(new ComponentName(this, DemoAppWidgetProvider.class));
-            this.sendBroadcast(intent);
-        }
-    }
-
-    public void initViewListApp(){
-        List<AppModel> listAppInput = new ArrayList<>();
-        listAppInput.add(new AppModel("https://i.ibb.co/YtYjjc3/POOLS-Betting.png","App1","com.example"));
-        listAppInput.add(new AppModel("https://i.ibb.co/CbzS19j/Frame-1000003687.png","App2","com.example"));
-        listAppInput.add(new AppModel("https://i.ibb.co/QMpvsjk/Frame-1000003681.png","App3","com.example"));
-        listAppInput.add(new AppModel("https://i.ibb.co/DWjmXjp/Frame-1000003688.png","App4","com.example"));
-
-        listApp.addAll(listAppInput) ;
         Intent intent = new Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
         intent.setComponent(new ComponentName(this, DemoAppWidgetProvider.class));
         this.sendBroadcast(intent);

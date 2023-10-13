@@ -46,11 +46,6 @@ public class ListEarnPointRemoteViewFactory implements RemoteViewsService.Remote
         RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.item_info_point_app);
         remoteViews.setTextViewText(R.id.tvNameApp, dataList.get(i).getNameApp());
         remoteViews.setTextViewText(R.id.tvPoint, dataList.get(i).getPoint().toString());
-//        if(dataList.get(i).getImage() != null){
-//            remoteViews.setImageViewBitmap(R.id.ivIconApp,((BitmapDrawable)dataList.get(i).getImage()).getBitmap());
-//        }else {
-//            remoteViews.setImageViewResource(R.id.ivIconApp,R.drawable.baseline_widgets_24);
-//        }
         return remoteViews;
     }
 

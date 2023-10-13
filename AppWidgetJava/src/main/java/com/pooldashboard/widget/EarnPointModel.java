@@ -7,12 +7,10 @@ import java.io.Serializable;
 public class EarnPointModel implements Serializable {
     private String nameApp ;
     private Integer point ;
-    private Drawable image ;
 
-    public EarnPointModel(String nameApp, Integer point, Drawable image) {
+    public EarnPointModel(String nameApp, Integer point) {
         this.nameApp = nameApp;
         this.point = point;
-        this.image = image;
     }
     public String getNameApp() {
         return nameApp;
@@ -22,8 +20,12 @@ public class EarnPointModel implements Serializable {
         return point;
     }
 
-    public Drawable getImage() {
-        return image;
+    @Override
+    public String toString() {
+        return "EarnPointModel{" +
+                "nameApp='" + nameApp + '\'' +
+                ", point=" + point +
+                '}';
     }
 
     public void setNameApp(String nameApp) {
@@ -34,7 +36,4 @@ public class EarnPointModel implements Serializable {
         this.point = point;
     }
 
-    public void setImage(Drawable image) {
-        this.image = image;
-    }
 }

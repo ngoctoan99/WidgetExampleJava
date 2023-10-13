@@ -1,0 +1,12 @@
+
+{
+java:S1488"dImmediately return this expression instead of assigning it to the temporary variable "exampleModel".(¸Âê
+œ
+java:S1186s"€Add a nested comment explaining why this method is empty, throw an UnsupportedOperationException or complete the implementation.(Ó’Í‰ÿÿÿÿÿ
+m
+java:S3776N"RRefactor this method to reduce its Cognitive Complexity from 16 to the 15 allowed.(š³ÿÿÿÿÿÿ
+Q	java:S125w"<This block of commented-out lines of code should be removed.(íÜËñ
+8
+java:S2153Ÿ"Remove the boxing to "Long".(¾Šæ¡ıÿÿÿÿ
+R
+java:S1874¡"6Remove this use of "getPackageInfo"; it is deprecated.(¤æ“­şÿÿÿÿ
