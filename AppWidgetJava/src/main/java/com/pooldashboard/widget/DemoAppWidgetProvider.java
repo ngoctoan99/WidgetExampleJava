@@ -16,32 +16,33 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.JsonReader;
 import android.util.Log;
+import android.util.SizeF;
 import android.widget.RemoteViews;
 
-import androidx.annotation.RequiresApi;
+import androidx.collection.ArrayMap;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 
-import java.io.StringReader;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Map;
 
 
 public class DemoAppWidgetProvider extends AppWidgetProvider {
     private static final String ACTION_POST = "actionPost";
+    private static Boolean smallView = true ;
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-        Log.d("HHH", "onUpdate");
-        if(getDataExample(context) != null){
-            dataList.clear();
-            listApp.clear();
-            dataList.addAll(getDataExample(context).listEarnPointToday);
-            listApp.addAll(getDataExample(context).listApp);
-        }
+//        Log.d("HHH", "onUpdate");
+//        if(getDataExample(context) != null){
+//            dataList.clear();
+//            listApp.clear();
+//            dataList.addAll(getDataExample(context).listEarnPointToday);
+//            listApp.addAll(getDataExample(context).listApp);
+//        }
         for (int appWidgetId : appWidgetIds) {
             updateUIWidget(appWidgetId, context, appWidgetManager);
         }
@@ -49,12 +50,39 @@ public class DemoAppWidgetProvider extends AppWidgetProvider {
     }
 
     private void updateUIWidget(Integer appWidgetId , Context context , AppWidgetManager appWidgetManager ) {
+        if(getDataExample(context) != null){
+            dataList.clear();
+            listApp.clear();
+            dataList.addAll(getDataExample(context).listEarnPointToday);
+            listApp.addAll(getDataExample(context).listApp);
+        }
         Bundle options = appWidgetManager.getAppWidgetOptions(appWidgetId);
         // Get min width and height.
         int minHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT);
-
         RemoteViews remoteViews = null;
 
+//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
+//            // Get the new sizes.
+//            ArrayList<SizeF> sizes =
+//                    options.getParcelableArrayList(AppWidgetManager.OPTION_APPWIDGET_SIZES);
+//            // Check that the list of sizes is provided by the launcher.
+//            if (sizes == null || sizes.isEmpty()) {
+//                return;
+//            }
+//            // Map the sizes to the RemoteViews that you want.
+//            Map<SizeF, RemoteViews> viewMapping = new ArrayMap<>();
+//            for (SizeF size : sizes) {
+//                viewMapping.put(size, createRemoteViews(size,context));
+//            }
+//            remoteViews = new RemoteViews(viewMapping);
+//        }else {
+//            if(getCellsForSize(minHeight) == 2){
+//                remoteViews=   new RemoteViews(context.getPackageName(), R.layout.example_app_widget_min_height);
+//            }
+//            else {
+//                remoteViews=   new RemoteViews(context.getPackageName(), R.layout.example_widget_4_3);
+//            }
+//        }
 
         if(getCellsForSize(minHeight) == 2){
             remoteViews=   new RemoteViews(context.getPackageName(), R.layout.example_app_widget_min_height);
@@ -97,12 +125,12 @@ public class DemoAppWidgetProvider extends AppWidgetProvider {
         if(intent != null){
             String action = intent.getAction();
             if(!TextUtils.isEmpty(action) && action.equals(AppWidgetManager.ACTION_APPWIDGET_UPDATE)){
-                if(getDataExample(context) != null){
-                    dataList.clear();
-                    listApp.clear();
-                    dataList.addAll(getDataExample(context).listEarnPointToday);
-                    listApp.addAll(getDataExample(context).listApp);
-                }
+//                if(getDataExample(context) != null){
+//                    dataList.clear();
+//                    listApp.clear();
+//                    dataList.addAll(getDataExample(context).listEarnPointToday);
+//                    listApp.addAll(getDataExample(context).listApp);
+//                }
                 AppWidgetManager appWidgetManager  =AppWidgetManager.getInstance(context);
                 int[] appWidgetIds =  appWidgetManager.getAppWidgetIds(new ComponentName(context,DemoAppWidgetProvider.class));
                 for (int appWidgetId : appWidgetIds) {
@@ -129,6 +157,12 @@ public class DemoAppWidgetProvider extends AppWidgetProvider {
 
     @Override
     public void onAppWidgetOptionsChanged(Context context, AppWidgetManager appWidgetManager, int appWidgetId, Bundle newOptions) {
+        if(getDataExample(context) != null){
+            dataList.clear();
+            listApp.clear();
+            dataList.addAll(getDataExample(context).listEarnPointToday);
+            listApp.addAll(getDataExample(context).listApp);
+        }
         Bundle options = appWidgetManager.getAppWidgetOptions(appWidgetId);
         // Get min width and height.
         int minHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT);
@@ -144,6 +178,23 @@ public class DemoAppWidgetProvider extends AppWidgetProvider {
             ++n;
         }
         return n - 1;
+    }
+    private RemoteViews createRemoteViews(SizeF size, Context context) {
+        RemoteViews remoteViews  = null ;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
+            RemoteViews smallView =
+                    new RemoteViews(context.getPackageName(), R.layout.example_app_widget_min_height);
+            RemoteViews normalView =
+                    new RemoteViews(context.getPackageName(), R.layout.example_widget_4_3);
+
+
+            Map<SizeF, RemoteViews> viewMapping = new ArrayMap<>();
+            viewMapping.put(new SizeF(300f, 90f), smallView);
+            viewMapping.put(new SizeF(300f, 100f), normalView);
+            remoteViews = new RemoteViews(viewMapping);
+        }
+        return remoteViews ;
+
     }
 
      ExampleModel getDataExample(Context context){

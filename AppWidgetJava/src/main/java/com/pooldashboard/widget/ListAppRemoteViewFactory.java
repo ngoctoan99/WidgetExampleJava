@@ -71,28 +71,28 @@ public class ListAppRemoteViewFactory implements RemoteViewsService.RemoteViewsF
     @Override
     public RemoteViews getViewAt(int i) {
         RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.item_app_widget);
-//        displayImageApp(listApp.get(i).getNameApp(),remoteViews);
+        displayImageApp(listApp.get(i).getNameApp(),remoteViews);
         Intent fillIntent = new Intent();
         fillIntent.putExtra(Constant.KEY_CLICK_LIST_APP_WIDGET, listApp.get(i).getPackageName());
         remoteViews.setOnClickFillInIntent(R.id.ivApp, fillIntent);
-        if(listApp.get(i).getImage() != null){
-            try {
-                Bitmap bitmap = Glide.with(context)
-                        .asBitmap()
-                        .load(Uri.parse(listApp.get(i).getImage()))
-                        .error(R.drawable.baseline_widgets_24)
-                        .placeholder(R.drawable.baseline_widgets_24)
-                        .submit()
-                        .get();
-                remoteViews.setImageViewBitmap(R.id.ivApp, bitmap);
-            } catch (ExecutionException e) {
-                throw new RuntimeException(e);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }else {
-            remoteViews.setImageViewResource(R.id.ivApp,R.drawable.baseline_widgets_24);
-        }
+//        if(listApp.get(i).getImage() != null){
+//            try {
+//                Bitmap bitmap = Glide.with(context)
+//                        .asBitmap()
+//                        .load(Uri.parse(listApp.get(i).getImage()))
+//                        .error(R.drawable.baseline_widgets_24)
+//                        .placeholder(R.drawable.baseline_widgets_24)
+//                        .submit()
+//                        .get();
+//                remoteViews.setImageViewBitmap(R.id.ivApp, bitmap);
+//            } catch (ExecutionException e) {
+//                throw new RuntimeException(e);
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }else {
+//            remoteViews.setImageViewResource(R.id.ivApp,R.drawable.baseline_widgets_24);
+//        }
         return remoteViews;
     }
 
