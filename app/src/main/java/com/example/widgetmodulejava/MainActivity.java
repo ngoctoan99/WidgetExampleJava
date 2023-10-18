@@ -1,10 +1,5 @@
 package com.example.widgetmodulejava;
-
-import static com.pooldashboard.widget.ListAppRemoteViewFactory.listApp;
-import static com.pooldashboard.widget.ListEarnPointRemoteViewFactory.dataList;
-
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
@@ -13,35 +8,22 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-
+import com.example.widgetmodulejava.databinding.ActivityMainBinding;
+import com.github.mikephil.charting.data.Entry;
 import com.google.gson.Gson;
-import com.pooldashboard.widget.AppModel;
 import com.pooldashboard.widget.Constant;
 import com.pooldashboard.widget.DemoAppWidgetProvider;
-import com.pooldashboard.widget.EarnPointModel;
-import com.pooldashboard.widget.ExampleModel;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    private Button btnAddWidget ,btnAddToList;
-    private EditText edtNameApp ;
-    public static List<EarnPointModel> listEarnPoint = new ArrayList<>();
-    public static List<AppModel> listAppInput = new ArrayList<>();
-    ExampleModel exampleModel ;
     String json ;
+    private ActivityMainBinding binding ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        btnAddWidget = findViewById(R.id.btnAddWidget);
-        btnAddToList = findViewById(R.id.btnAddToList);
-        edtNameApp = findViewById(R.id.edtNameApp);
+        binding  = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
          json ="{\n" +
                  "  \"totalPools\": 1000,\n" +
@@ -92,11 +74,15 @@ public class MainActivity extends AppCompatActivity {
            pinWidget(json);
         }
 
-        btnAddWidget.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                pinWidget(json);
-            }
+
+        binding.btnChart.setOnClickListener(view -> {
+            List<Entry> entries = new ArrayList<>();
+            entries.add(new Entry(0, 2));
+            entries.add(new Entry(1, 1));
+            entries.add(new Entry(2, 6));
+            entries.add(new Entry(3, 9));
+            entries.add(new Entry(4, 7));
+            changeDataChart(entries);
         });
 
     }
@@ -124,4 +110,22 @@ public class MainActivity extends AppCompatActivity {
         intent.setComponent(new ComponentName(this, DemoAppWidgetProvider.class));
         this.sendBroadcast(intent);
     }
-}
+
+    public void changeDataChart(List<Entry> entryList){
+        Gson gson = new Gson();
+        String json = gson.toJson(entryList);
+        SharedPreferences sharedPreferences = getSharedPreferences(Constant.NAME_DATA_LOCAL3, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(Constant.KEY_DATA_CHART_WIDGET,json);
+        editor.apply();
+        Intent intent = new Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        intent.setComponent(new ComponentName(this, DemoAppWidgetProvider.class));
+        this.sendBroadcast(intent);
+    }
+
+
+
+
+
+
+    }

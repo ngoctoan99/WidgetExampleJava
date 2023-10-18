@@ -2,7 +2,6 @@ package com.pooldashboard.widget;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.BitmapDrawable;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
@@ -61,7 +60,7 @@ public class ListEarnPointRemoteViewFactory implements RemoteViewsService.Remote
 
     @Override
     public long getItemId(int i) {
-        return Long.valueOf(i);
+        return (long) i;
     }
 
     @Override

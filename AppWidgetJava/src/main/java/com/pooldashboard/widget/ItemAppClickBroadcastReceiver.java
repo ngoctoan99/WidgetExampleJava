@@ -17,6 +17,7 @@ public class ItemAppClickBroadcastReceiver extends BroadcastReceiver {
         String packageName = intent.getStringExtra(EXTRA_PACKAGE_NAME);
         if (checkAppInstall(packageName, context)) {
 
+            assert packageName != null;
             Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageName);
             context.startActivity(launchIntent);
             //   PendingIntent.getActivity(context,0,launchIntent,PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
@@ -35,7 +36,7 @@ public class ItemAppClickBroadcastReceiver extends BroadcastReceiver {
         PackageManager pm = context.getPackageManager();
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                pm.getPackageInfo(uri, PackageManager.PackageInfoFlags.of(Long.valueOf(0)));
+                pm.getPackageInfo(uri, PackageManager.PackageInfoFlags.of(0L));
             } else {
                 pm.getPackageInfo(uri, 0);
             }
